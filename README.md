@@ -1,10 +1,17 @@
 # Sistema Inteligente de Analise de Imagens Metalicas
 
+Desenvolvido para a disciplina de Computação Gráfica & Processamento de Imagens no [Centro Universitário Padre Anchieta](https://www.anchieta.br/) sob a supervisão do docente [Daniel Feitoza Ruis da Silva](https://www.linkedin.com/in/daniel-feitoza-a5216490/), no curso de Ciência da Computação (5º Semestre - 2026).
+
+---
+## Participantes 
+
+- [Aline da Silva de Azevedo](https://github.com/asazeved)
+- [Ana Júlia Lima Formiga](https://github.com/AnaJuliaFormiga)
+- [Caio Martin do Nascimento](https://github.com/Caio-Martin)
+
+
 ## Visao geral
 Este trabalho implementa um pipeline completo de visao computacional para inspecao de pecas metalicas, combinando tecnicas classicas (pre-processamento, histograma, binarizacao e contornos) com heuristicas para oxidação/dano e suporte opcional a um modelo customizado YOLO.
-
-Codigo principal: [sistema_visao_ia.py](sistema_visao_ia.py)
-Arquivos Docker: [docker/Dockerfile](docker/Dockerfile) e [docker/docker-compose.yml](docker/docker-compose.yml)
 
 ## Objetivo
 - Detectar indícios de oxidacao e danos superficiais em imagens ou videos.
@@ -12,7 +19,7 @@ Arquivos Docker: [docker/Dockerfile](docker/Dockerfile) e [docker/docker-compose
 - Disponibilizar interface grafica simples para uso sem linha de comando.
 
 ## Requisitos
-- Python 3.9+ recomendado
+- Python 3.9
 - Dependencias principais:
   - opencv-python
   - numpy
@@ -38,7 +45,7 @@ python sistema_visao_ia.py gui
 ```
 A interface permite selecionar imagem, video ou webcam.
 
-### 2) Linha de comando
+### 2) CLI
 - Imagem:
 ```bash
 python sistema_visao_ia.py caminho/para/imagem.jpg
@@ -51,19 +58,6 @@ python sistema_visao_ia.py webcam
 ```bash
 python sistema_visao_ia.py caminho/para/video.mp4
 ```
-
-## Docker (WSLg + webcam)
-Arquivos ficam na pasta [docker/](docker/).
-
-Subir com compose a partir da raiz do projeto:
-```bash
-docker compose -f docker/docker-compose.yml up --build
-```
-
-Montagens (volumes) padrao:
-- Projeto: .:/app
-- Dados: ./data:/data
-- GUI WSLg: /mnt/wslg:/mnt/wslg
 
 ## Saidas geradas
 - `resultado_final.png`: painel com as etapas e o resumo final.
@@ -92,6 +86,7 @@ Pontuacoes (score) calculadas:
 As pontuacoes sao normalizadas e limitadas em 100.
 
 Equacoes (conceito):
+
 $$
 score_{ox} = \min(100, 6 \cdot area_{ferrugem} + 0.5 \cdot \max(0, 35 - saturacao))
 $$
@@ -111,21 +106,3 @@ Para usar:
 - **Threshold**: limiar 127 para binarizacao.
 - **HSV**: saturacao aumentada em +50 para visualizacao.
 - **YOLO**: confianca padrao 0.25.
-
-## Limitacoes e observacoes
-- As heuristicas nao substituem um modelo treinado; variacoes de iluminacao podem afetar resultados.
-- Para video, o sistema processa 1 a cada 5 frames (performance).
-- As conclusoes sao indicativas e devem ser validadas com inspeção real.
-
-## Estrutura do trabalho
-- [sistema_visao_ia.py](sistema_visao_ia.py): implementacao completa do pipeline, GUI e CLI.
-
-## Troubleshooting rapido
-- **Webcam nao abre**: verifique se outra aplicacao esta usando a camera.
-- **Imagem preta ou vazia**: confirme o caminho e o formato do arquivo.
-- **YOLO nao encontrado**: instale `ultralytics` e verifique o arquivo `modelo_metal.pt`.
-
-## Sugestoes de melhoria
-- Treinar um modelo customizado com classes especificas (oxidacao, risco, fissura, amassado).
-- Ajustar intervalos HSV conforme o tipo de metal e iluminacao.
-- Adicionar metricas quantitativas (percentual de area afetada) por classe detectada.

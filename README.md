@@ -1,5 +1,15 @@
 # Sistema Inteligente de Analise de Imagens Metalicas
 
+Desenvolvido para a disciplina de Computação Gráfica & Processamento de Imagens no [Centro Universitário Padre Anchieta](https://www.anchieta.br/) sob a supervisão do docente [Daniel Feitoza Ruis da Silva](https://www.linkedin.com/in/daniel-feitoza-a5216490/), no curso de Ciência da Computação (5º Semestre - 2026).
+
+---
+## Participantes 
+
+- [Aline da Silva de Azevedo](https://github.com/asazeved)
+- [Ana Júlia Lima Formiga](https://github.com/AnaJuliaFormiga)
+- [Caio Martin do Nascimento](https://github.com/Caio-Martin)
+
+
 ## Visao geral
 Este trabalho implementa um pipeline completo de visao computacional para inspecao de pecas metalicas, combinando tecnicas classicas (pre-processamento, histograma, binarizacao e contornos) com heuristicas para oxidação/dano e suporte opcional a um modelo customizado YOLO.
 

@@ -86,6 +86,7 @@ Pontuacoes (score) calculadas:
 As pontuacoes sao normalizadas e limitadas em 100.
 
 Equacoes (conceito):
+
 $$
 score_{ox} = \min(100, 6 \cdot area_{ferrugem} + 0.5 \cdot \max(0, 35 - saturacao))
 $$

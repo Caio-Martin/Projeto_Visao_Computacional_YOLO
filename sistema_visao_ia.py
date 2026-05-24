@@ -47,6 +47,7 @@ def interpretar_histograma(gray: np.ndarray) -> str:
     media = gray.mean()
     desvio = gray.std()
 
+    # Limiares empiricos para classificar exposicao e contraste.
     if media < 80:
         qualidade = "Imagem SUBEXPOSTA (escura)"
     elif media > 180:
@@ -72,6 +73,7 @@ def interpretar_hsv(hsv: np.ndarray) -> str:
     saturacao_media = hsv[:, :, 1].mean()    # 0-255
     brilho_medio = hsv[:, :, 2].mean()       # 0-255
 
+    # Faixas aproximadas de matiz no espaco HSV do OpenCV (0-179), circular.
     faixas_hue = [
         (0,   10,  "Vermelho"),
         (11,  25,  "Laranja"),
@@ -113,6 +115,7 @@ def detectar_defeitos_modelo(img: np.ndarray):
         return None
 
     model = YOLO(MODELO_DEFEITOS_PATH)
+    # A inferencia retorna caixas, classes e confiancas; plot() gera anotacao visual.
     results = model(img, conf=0.25, verbose=False)
     annotated_bgr = results[0].plot()
     annotated = cv2.cvtColor(annotated_bgr, cv2.COLOR_BGR2RGB)
@@ -168,10 +171,14 @@ def analisar_defeitos_metalicos(img: np.ndarray):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+    # Categorizacao de ferrugem: pixels HSV com matiz laranja-avermelhado
+    # e saturacao/valor moderados entram na mascara de oxidacao.
+    # Duas faixas cobrem variacoes de iluminacao e tons de ferrugem.
     rust_mask_1 = cv2.inRange(hsv, (5, 45, 35), (25, 255, 220))
     rust_mask_2 = cv2.inRange(hsv, (0, 30, 35), (18, 255, 180))
     rust_mask = cv2.bitwise_or(rust_mask_1, rust_mask_2)
 
+    # Reduz ruido e pequenos pontos isolados.
     rust_mask = cv2.medianBlur(rust_mask, 5)
     rust_mask = cv2.morphologyEx(
         rust_mask,
@@ -179,6 +186,7 @@ def analisar_defeitos_metalicos(img: np.ndarray):
         cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)),
     )
 
+    # Black-hat realca pontos escuros; top-hat realca riscos claros.
     blackhat_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
     blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, blackhat_kernel)
     tophat = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, blackhat_kernel)
@@ -187,6 +195,7 @@ def analisar_defeitos_metalicos(img: np.ndarray):
     _, bright_scratch = cv2.threshold(tophat, 18, 255, cv2.THRESH_BINARY)
 
     damage_mask = cv2.bitwise_or(dark_spots, bright_scratch)
+    # Fecha pequenos buracos e conecta fragmentos.
     damage_mask = cv2.morphologyEx(
         damage_mask,
         cv2.MORPH_CLOSE,
@@ -200,6 +209,7 @@ def analisar_defeitos_metalicos(img: np.ndarray):
     brilho_medio = float(gray.mean())
     saturacao_media = float(hsv[:, :, 1].mean())
 
+    # Scores combinam area detectada e indicadores globais.
     oxidation_score = min(100.0, rust_pct * 6.0 + max(0.0, (35.0 - saturacao_media) * 0.5))
     damage_score = min(100.0, damage_pct * 8.0 + max(0.0, contraste_local - 120.0) * 0.03)
 
@@ -468,6 +478,7 @@ def detectar_objetos_yolo(img: np.ndarray, conf: float = 0.25):
 
 
 def processar_frame_metalico(img: np.ndarray):
+    # Agrega todas as etapas do pipeline em um unico dicionario.
     gray, blur, edges = processar_imagem(img)
     hsv, img_sat_alta, h, s, v = analisar_cor(img)
     descricao_hist = interpretar_histograma(gray)
@@ -525,7 +536,7 @@ def exibir_resultado_final(
         ax.set_title(titulo, fontsize=9)
         ax.axis("off")
 
-    # Última célula: texto resumo
+    # Ultima celula: texto resumo
     ax_info = axes.ravel()[-1]
     ax_info.axis("off")
     info_texto = (
@@ -542,6 +553,7 @@ def exibir_resultado_final(
                  bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
 
     plt.tight_layout()
+    # Salva o painel consolidado para referencia.
     plt.savefig("resultado_final.png", dpi=150, bbox_inches="tight")
     plt.show()
     print("[INFO] Resultado salvo em: resultado_final.png")
@@ -573,6 +585,7 @@ def processar_video_metalico(caminho_video: str):
             break
 
         total_frames += 1
+        # Processa 1 a cada 5 frames para acelerar.
         if total_frames % 5 != 0:
             continue
 
@@ -586,10 +599,21 @@ def processar_video_metalico(caminho_video: str):
 
         ultimo_resumo = defeitos["conclusao"]
 
-        cv2.imshow(
-            "Analise de Metal - Video",
-            cv2.cvtColor(defeitos["overlay"], cv2.COLOR_RGB2BGR),
+        overlay_bgr = cv2.cvtColor(defeitos["overlay"], cv2.COLOR_RGB2BGR)
+        indicio_oxidacao = "SIM" if defeitos["oxidation_score"] >= 15 else "NAO"
+        texto = f"Oxidacao: {indicio_oxidacao} (score={defeitos['oxidation_score']:.1f})"
+        cv2.putText(
+            overlay_bgr,
+            texto,
+            (12, 28),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            (0, 0, 255) if indicio_oxidacao == "SIM" else (0, 200, 0),
+            2,
+            cv2.LINE_AA,
         )
+
+        cv2.imshow("Analise de Metal - Video", overlay_bgr)
 
         tecla = cv2.waitKey(1) & 0xFF
         if tecla == ord("q"):

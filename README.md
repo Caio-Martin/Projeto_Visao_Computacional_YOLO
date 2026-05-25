@@ -31,6 +31,10 @@ Dependencias opcionais:
 
 Instalacao rapida:
 ```bash
+pip install -r requirements.txt
+```
+Ou, manualmente:
+```bash
 pip install opencv-python numpy matplotlib
 ```
 Opcional:
@@ -62,6 +66,11 @@ python sistema_visao_ia.py caminho/para/video.mp4
 ## Saidas geradas
 - `resultado_final.png`: painel com as etapas e o resumo final.
 - `histograma.png`: histograma da imagem em tons de cinza.
+
+## Estrutura do projeto
+- [sistema_visao_ia.py](sistema_visao_ia.py): pipeline principal e interface grafica.
+- [requirements.txt](requirements.txt): dependencias.
+- [README.md](README.md): documentacao.
 
 ## Pipeline implementado (resumo tecnico)
 1. **Aquisicao**: arquivo, video ou webcam.
@@ -106,3 +115,7 @@ Para usar:
 - **Threshold**: limiar 127 para binarizacao.
 - **HSV**: saturacao aumentada em +50 para visualizacao.
 - **YOLO**: confianca padrao 0.25.
+
+## Observacoes
+- Para video/webcam, pressione `q` para encerrar.
+- O modelo YOLOv8n e baixado automaticamente na primeira execucao (quando `ultralytics` esta instalado).
